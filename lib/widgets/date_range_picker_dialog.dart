@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../constants/app_colors.dart';
 
 Future<DateTimeRange?> showModernDateRangePicker(
@@ -9,7 +10,8 @@ Future<DateTimeRange?> showModernDateRangePicker(
   return showDialog<DateTimeRange>(
     context: context,
     barrierColor: Colors.black54,
-    builder: (context) => ModernDateRangePickerDialog(initialRange: initialRange),
+    builder: (context) =>
+        ModernDateRangePickerDialog(initialRange: initialRange),
   );
 }
 
@@ -19,10 +21,12 @@ class ModernDateRangePickerDialog extends StatefulWidget {
   const ModernDateRangePickerDialog({super.key, this.initialRange});
 
   @override
-  State<ModernDateRangePickerDialog> createState() => _ModernDateRangePickerDialogState();
+  State<ModernDateRangePickerDialog> createState() =>
+      _ModernDateRangePickerDialogState();
 }
 
-class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialog> {
+class _ModernDateRangePickerDialogState
+    extends State<ModernDateRangePickerDialog> {
   late DateTime _displayedMonth;
   DateTime? _startDate;
   DateTime? _endDate;
@@ -33,10 +37,14 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
     super.initState();
     final now = DateTime.now();
     _today = DateTime(now.year, now.month, now.day);
-    _startDate = widget.initialRange?.start != null && !widget.initialRange!.start.isBefore(_today)
+    _startDate =
+        widget.initialRange?.start != null &&
+            !widget.initialRange!.start.isBefore(_today)
         ? widget.initialRange!.start
         : _today;
-    _endDate = widget.initialRange?.end != null && !widget.initialRange!.end.isBefore(_startDate!)
+    _endDate =
+        widget.initialRange?.end != null &&
+            !widget.initialRange!.end.isBefore(_startDate!)
         ? widget.initialRange!.end
         : _today.add(const Duration(days: 2));
     _displayedMonth = DateTime(_startDate!.year, _startDate!.month);
@@ -105,7 +113,9 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd MMM yyyy');
     final monthYearFormat = DateFormat('MMMM yyyy');
-    final canGoPrev = _displayedMonth.isAfter(DateTime(_today.year, _today.month));
+    final canGoPrev = _displayedMonth.isAfter(
+      DateTime(_today.year, _today.month),
+    );
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -148,7 +158,11 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                         color: Colors.white.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.calendar_month_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -176,11 +190,19 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const Text('  →  ', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                              const Text(
+                                '  →  ',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
                               Text(
                                 _endDate != null
                                     ? dateFormat.format(_endDate!)
-                                    : (_startDate != null ? 'Select Check-out' : 'Check-out'),
+                                    : (_startDate != null
+                                          ? 'Select Check-out'
+                                          : 'Check-out'),
                                 style: const TextStyle(
                                   color: AppColors.mintHighlight,
                                   fontSize: 12,
@@ -190,7 +212,10 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                               if (_nightsCount > 0) ...[
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.25),
                                     borderRadius: BorderRadius.circular(10),
@@ -211,7 +236,11 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                       splashRadius: 18,
                     ),
@@ -221,10 +250,15 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
 
               // 2. QUICK PRESET CHIPS
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: const BoxDecoration(
                   color: AppColors.lightBackground,
-                  border: Border(bottom: BorderSide(color: AppColors.lightBorder)),
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.lightBorder),
+                  ),
                 ),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -243,25 +277,29 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                       const SizedBox(width: 8),
                       PresetChip(
                         label: 'Tonight (1 Nt)',
-                        isSelected: _isSameDay(_startDate, _today) && _nightsCount == 1,
+                        isSelected:
+                            _isSameDay(_startDate, _today) && _nightsCount == 1,
                         onTap: () => _applyPreset(1),
                       ),
                       const SizedBox(width: 6),
                       PresetChip(
                         label: '2 Nights',
-                        isSelected: _isSameDay(_startDate, _today) && _nightsCount == 2,
+                        isSelected:
+                            _isSameDay(_startDate, _today) && _nightsCount == 2,
                         onTap: () => _applyPreset(2),
                       ),
                       const SizedBox(width: 6),
                       PresetChip(
                         label: '3 Nights',
-                        isSelected: _isSameDay(_startDate, _today) && _nightsCount == 3,
+                        isSelected:
+                            _isSameDay(_startDate, _today) && _nightsCount == 3,
                         onTap: () => _applyPreset(3),
                       ),
                       const SizedBox(width: 6),
                       PresetChip(
                         label: '1 Week',
-                        isSelected: _isSameDay(_startDate, _today) && _nightsCount == 7,
+                        isSelected:
+                            _isSameDay(_startDate, _today) && _nightsCount == 7,
                         onTap: () => _applyPreset(7),
                       ),
                       const SizedBox(width: 6),
@@ -283,7 +321,9 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                   children: [
                     IconButton(
                       icon: const Icon(Icons.chevron_left_rounded),
-                      color: canGoPrev ? AppColors.primaryTeal : AppColors.textDisabled,
+                      color: canGoPrev
+                          ? AppColors.primaryTeal
+                          : AppColors.textDisabled,
                       onPressed: canGoPrev
                           ? () {
                               setState(() {
@@ -323,20 +363,29 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
-                  children: const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) {
-                    return Expanded(
-                      child: Center(
-                        child: Text(
-                          day,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textMuted,
+                  children:
+                      const [
+                        'Mon',
+                        'Tue',
+                        'Wed',
+                        'Thu',
+                        'Fri',
+                        'Sat',
+                        'Sun',
+                      ].map((day) {
+                        return Expanded(
+                          child: Center(
+                            child: Text(
+                              day,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
                 ),
               ),
               const SizedBox(height: 6),
@@ -351,7 +400,10 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
 
               // 6. BOTTOM ACTION FOOTER
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: const BoxDecoration(
                   color: AppColors.lightBackground,
                   border: Border(top: BorderSide(color: AppColors.lightBorder)),
@@ -368,7 +420,13 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.textMuted,
                       ),
-                      child: const Text('Reset', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                      child: const Text(
+                        'Reset',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                     const Spacer(),
                     OutlinedButton(
@@ -376,26 +434,52 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textBody,
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                       ),
-                      child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12)),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
                       onPressed: _startDate != null
                           ? () {
-                              final end = _endDate ?? _startDate!.add(const Duration(days: 1));
-                              Navigator.of(context).pop(DateTimeRange(start: _startDate!, end: end));
+                              final end =
+                                  _endDate ??
+                                  _startDate!.add(const Duration(days: 1));
+                              Navigator.of(context).pop(
+                                DateTimeRange(start: _startDate!, end: end),
+                              );
                             }
                           : null,
                       icon: const Icon(Icons.check_rounded, size: 16),
-                      label: const Text('Apply Stay Dates', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      label: const Text(
+                        'Apply Stay Dates',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryTeal,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         elevation: 0,
                       ),
                     ),
@@ -411,7 +495,11 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
 
   Widget _buildMonthCalendarGrid(DateTime month) {
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final firstDayWeekday = DateTime(month.year, month.month, 1).weekday; // 1 = Mon, 7 = Sun
+    final firstDayWeekday = DateTime(
+      month.year,
+      month.month,
+      1,
+    ).weekday; // 1 = Mon, 7 = Sun
     final leadingOffset = firstDayWeekday - 1;
     final totalCells = ((leadingOffset + daysInMonth + 6) ~/ 7) * 7;
 
@@ -451,12 +539,16 @@ class _ModernDateRangePickerDialogState extends State<ModernDateRangePickerDialo
               } else if (isStart) {
                 bgColor = AppColors.primaryTeal;
                 textColor = Colors.white;
-                borderRadius = const BorderRadius.horizontal(left: Radius.circular(20));
+                borderRadius = const BorderRadius.horizontal(
+                  left: Radius.circular(20),
+                );
                 fontWeight = FontWeight.bold;
               } else if (isEnd) {
                 bgColor = AppColors.primaryTeal;
                 textColor = Colors.white;
-                borderRadius = const BorderRadius.horizontal(right: Radius.circular(20));
+                borderRadius = const BorderRadius.horizontal(
+                  right: Radius.circular(20),
+                );
                 fontWeight = FontWeight.bold;
               } else if (inRange) {
                 bgColor = AppColors.mintHighlight;
