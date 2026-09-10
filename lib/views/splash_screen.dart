@@ -22,25 +22,38 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
     _flipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1600),
     );
 
-    // 2.5 flips (5 * pi) to start on logo.webp and land cleanly on logo1.webp
-    _flipAnimation = Tween<double>(begin: 0.0, end: 5 * math.pi).animate(
-      CurvedAnimation(parent: _flipController, curve: Curves.easeInOutCubic),
-    );
+    // Single flip (0 -> pi), pause, then single flip (pi -> 2*pi)
+    _flipAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: math.pi)
+            .chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 42.0,
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(math.pi),
+        weight: 16.0,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: math.pi, end: 2 * math.pi)
+            .chain(CurveTween(curve: Curves.easeInOutCubic)),
+        weight: 42.0,
+      ),
+    ]).animate(_flipController);
 
     _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _flipController, curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack)),
+      CurvedAnimation(parent: _flipController, curve: const Interval(0.0, 0.45, curve: Curves.easeOutBack)),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _flipController, curve: const Interval(0.0, 0.35, curve: Curves.easeIn)),
+      CurvedAnimation(parent: _flipController, curve: const Interval(0.0, 0.3, curve: Curves.easeIn)),
     );
 
     _flipController.forward();
 
-    Timer(const Duration(milliseconds: 1800), _navigateToHome);
+    Timer(const Duration(milliseconds: 2000), _navigateToHome);
   }
 
   void _navigateToHome() {

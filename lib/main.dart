@@ -16,7 +16,7 @@ class HotelBookingApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => BookingController(),
       child: MaterialApp(
-        title: 'RainStay Hotel Booking',
+        title: 'RainStay - Hotel Management & POS System',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryTeal),

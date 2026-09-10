@@ -100,10 +100,9 @@ class RoomCardTile extends StatelessWidget {
                         room.roomCode,
                         style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: AppColors.textDark),
                       ),
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                      PulsingStatusDot(
+                        color: dotColor,
+                        size: 7,
                       ),
                     ],
                   ),
@@ -178,3 +177,89 @@ class LegendDot extends StatelessWidget {
     );
   }
 }
+
+class PulsingStatusDot extends StatefulWidget {
+  final Color color;
+  final double size;
+
+  const PulsingStatusDot({
+    super.key,
+    required this.color,
+    this.size = 7.0,
+  });
+
+  @override
+  State<PulsingStatusDot> createState() => _PulsingStatusDotState();
+}
+
+class _PulsingStatusDotState extends State<PulsingStatusDot> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _scaleAnimation;
+  late final Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 2.6).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutQuad),
+    );
+
+    _opacityAnimation = Tween<double>(begin: 0.65, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutQuad),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.size * 2.6,
+      height: widget.size * 2.6,
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _opacityAnimation.value,
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Container(
+                      width: widget.size,
+                      height: widget.size,
+                      decoration: BoxDecoration(
+                        color: widget.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                color: widget.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

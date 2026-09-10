@@ -74,22 +74,68 @@ class SectionContainer extends StatelessWidget {
 class InfoFieldItem extends StatelessWidget {
   final String label;
   final String value;
+  final IconData? suffixIcon;
+  final VoidCallback? onTap;
 
-  const InfoFieldItem({super.key, required this.label, required this.value});
+  const InfoFieldItem({
+    super.key,
+    required this.label,
+    required this.value,
+    this.suffixIcon,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final content = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.lightBackground,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: onTap != null ? AppColors.primaryTeal.withValues(alpha: 0.5) : const Color(0xFFCBD5E1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: onTap != null ? AppColors.primaryTeal : AppColors.textBody,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (suffixIcon != null) ...[
+            const SizedBox(width: 4),
+            Icon(
+              suffixIcon,
+              size: 13,
+              color: onTap != null ? AppColors.primaryTeal : AppColors.textMuted,
+            ),
+          ],
+        ],
+      ),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
         const SizedBox(height: 2),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          decoration: BoxDecoration(color: AppColors.lightBackground, borderRadius: BorderRadius.circular(6), border: Border.all(color: const Color(0xFFCBD5E1))),
-          child: Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textBody), overflow: TextOverflow.ellipsis),
-        ),
+        if (onTap != null)
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(6),
+            child: content,
+          )
+        else
+          content,
       ],
     );
   }

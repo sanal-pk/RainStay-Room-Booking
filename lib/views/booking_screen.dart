@@ -879,12 +879,37 @@ class _CheckInDetailsContent extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: InfoFieldItem(label: 'Duration', value: '${controller.nights} night(s)')),
+            Expanded(
+              child: InfoFieldItem(
+                label: 'Duration',
+                value: '${controller.nights} night(s)',
+                suffixIcon: Icons.calendar_today_outlined,
+                onTap: () async {
+                  final picked = await showModernDateRangePicker(
+                    context,
+                    initialRange: controller.dateRange,
+                  );
+                  if (picked != null) {
+                    controller.setDateRange(picked);
+                  }
+                },
+              ),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: InfoFieldItem(
                 label: 'Check-out Date',
-                value: controller.checkOutDate != null ? DateFormat('dd MMM').format(controller.checkOutDate!) : '—',
+                value: controller.checkOutDate != null ? DateFormat('dd MMM').format(controller.checkOutDate!) : 'Select',
+                suffixIcon: Icons.edit_calendar_rounded,
+                onTap: () async {
+                  final picked = await showModernDateRangePicker(
+                    context,
+                    initialRange: controller.dateRange,
+                  );
+                  if (picked != null) {
+                    controller.setDateRange(picked);
+                  }
+                },
               ),
             ),
           ],
