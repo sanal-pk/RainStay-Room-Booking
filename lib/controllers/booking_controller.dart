@@ -1,74 +1,73 @@
 import 'package:flutter/material.dart';
-import '../models/room_model.dart';
+import '../models/room.dart';
 
 class BookingController extends ChangeNotifier {
-  final List<Room> rooms = Room.getSampleRooms();
+  final List<Room> _rooms = Room.sampleRooms;
 
-  String _currentTab = 'dashboard'; // 'dashboard' | 'checkin' | 'checkout'
-  Room? _selectedRoom;
+  // Mock existing bookings for testing availability collisions (Bonus)
+  final List<ExistingBooking> _existingBookings = [
+    ExistingBooking(
+      roomCode: 'R101',
+      checkIn: DateTime.now().add(const Duration(days: 3)),
+      checkOut: DateTime.now().add(const Duration(days: 5)),
+    ),
+    ExistingBooking(
+      roomCode: 'R201',
+      checkIn: DateTime.now().add(const Duration(days: 1)),
+      checkOut: DateTime.now().add(const Duration(days: 4)),
+    ),
+  ];
+
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
-  String? _guestName = 'Guest Traveler';
-  String? _errorMessage;
+  Room? _selectedRoom;
+  int? _guestFilter;
+  String? _validationError;
 
-  String get currentTab => _currentTab;
-  Room? get selectedRoom => _selectedRoom;
+  List<Room> get rooms => _rooms;
   DateTime? get checkInDate => _checkInDate;
   DateTime? get checkOutDate => _checkOutDate;
-  String? get guestName => _guestName;
-  String? get errorMessage => _errorMessage;
+  Room? get selectedRoom => _selectedRoom;
+  int? get guestFilter => _guestFilter;
+  String? get validationError => _validationError;
 
-  DateTimeRange? get dateRange => (_checkInDate != null && _checkOutDate != null)
-      ? DateTimeRange(start: _checkInDate!, end: _checkOutDate!)
-      : null;
+  // Filtered rooms based on guest count selection
+  List<Room> get filteredRooms {
+    if (_guestFilter == null) return _rooms;
+    return _rooms.where((room) => room.maxGuests >= _guestFilter!).toList();
+  }
 
+  // Calculate number of nights between check-in and check-out
   int get nights {
     if (_checkInDate == null || _checkOutDate == null) return 0;
     final diff = _checkOutDate!.difference(_checkInDate!).inDays;
     return diff > 0 ? diff : 0;
   }
 
-  double get roomCharge {
-    if (_selectedRoom == null || nights == 0 || _errorMessage != null) return 0.0;
+  // Total price = nights * price per night
+  double get totalPrice {
+    if (_selectedRoom == null || nights <= 0 || _validationError != null) {
+      return 0.0;
+    }
     return nights * _selectedRoom!.pricePerNight;
   }
 
-  double get totalExtraCharges {
-    if (_selectedRoom == null) return 0.0;
-    return _selectedRoom!.extraCharges.fold(0.0, (sum, item) => sum + item.amount);
-  }
+  bool get canConfirmBooking =>
+      _selectedRoom != null &&
+      _checkInDate != null &&
+      _checkOutDate != null &&
+      _validationError == null &&
+      nights > 0;
 
-  double get totalPrice => roomCharge + totalExtraCharges;
-
-  bool get isReadyToBook =>
-      _selectedRoom != null && _checkInDate != null && _checkOutDate != null && _errorMessage == null;
-
-  int get totalRooms => rooms.length;
-  int get occupiedRooms => rooms.where((r) => r.status == RoomStatus.occupied).length;
-  int get availableRooms => rooms.where((r) => r.status == RoomStatus.available).length;
-  int get dirtyRooms => rooms.where((r) => r.status == RoomStatus.dirty).length;
-  int get occupancyRate => totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).round() : 0;
-
-  void switchTab(String tab, {Room? room}) {
-    _currentTab = tab;
-    if (room != null) {
-      selectRoom(room);
-    }
-    notifyListeners();
-  }
-
-  void selectRoom(Room room) {
-    _selectedRoom = room;
-    if (_currentTab == 'checkout' && room.checkInDate != null) {
-      _checkInDate = room.checkInDate;
-      _checkOutDate = room.checkOutDate ?? DateTime.now();
-    }
+  void setCheckInDate(DateTime? date) {
+    _checkInDate = date;
     _validate();
     notifyListeners();
   }
 
-  void setGuestName(String name) {
-    _guestName = name;
+  void setCheckOutDate(DateTime? date) {
+    _checkOutDate = date;
+    _validate();
     notifyListeners();
   }
 
@@ -84,64 +83,84 @@ class BookingController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearSelection() {
-    _selectedRoom = null;
+  void selectRoom(Room room) {
+    if (!isRoomAvailable(room)) {
+      _validationError = 'Room ${room.roomCode} is unavailable for the chosen dates.';
+      notifyListeners();
+      return;
+    }
+
+    _selectedRoom = room;
+    _validate();
+    notifyListeners();
+  }
+
+  void setGuestFilter(int? guests) {
+    _guestFilter = guests;
+    if (_selectedRoom != null && _guestFilter != null && _selectedRoom!.maxGuests < _guestFilter!) {
+      _selectedRoom = null;
+    }
+    notifyListeners();
+  }
+
+  void reset() {
     _checkInDate = null;
     _checkOutDate = null;
-    _errorMessage = null;
+    _selectedRoom = null;
+    _guestFilter = null;
+    _validationError = null;
     notifyListeners();
   }
 
-  void confirmCheckIn() {
-    if (!isReadyToBook || _selectedRoom == null) return;
-    _selectedRoom!.status = RoomStatus.occupied;
-    _selectedRoom!.currentGuest = _guestName?.isNotEmpty == true ? _guestName : 'Guest Traveler';
-    _selectedRoom!.checkInDate = _checkInDate;
-    _selectedRoom!.checkOutDate = _checkOutDate;
-    clearSelection();
-    notifyListeners();
+  // Check if a room conflicts with existing bookings
+  bool isRoomAvailable(Room room) {
+    if (_checkInDate == null || _checkOutDate == null) return true;
+
+    final inDate = DateTime(_checkInDate!.year, _checkInDate!.month, _checkInDate!.day);
+    final outDate = DateTime(_checkOutDate!.year, _checkOutDate!.month, _checkOutDate!.day);
+
+    for (final booking in _existingBookings) {
+      if (booking.roomCode == room.roomCode) {
+        final bIn = DateTime(booking.checkIn.year, booking.checkIn.month, booking.checkIn.day);
+        final bOut = DateTime(booking.checkOut.year, booking.checkOut.month, booking.checkOut.day);
+
+        // Dates overlap if (startA < endB) and (endA > startB)
+        if (inDate.isBefore(bOut) && outDate.isAfter(bIn)) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
-  void confirmCheckOut() {
-    if (_selectedRoom == null) return;
-    _selectedRoom!.status = RoomStatus.dirty;
-    _selectedRoom!.currentGuest = null;
-    _selectedRoom!.checkInDate = null;
-    _selectedRoom!.checkOutDate = null;
-    _selectedRoom!.extraCharges = [];
-    clearSelection();
-    notifyListeners();
-  }
-
-  void markRoomClean(Room room) {
-    room.status = RoomStatus.available;
-    notifyListeners();
-  }
-
+  // Core date & selection validation
   void _validate() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    if (_currentTab == 'checkin') {
-      if (_checkInDate != null) {
-        final checkInDay = DateTime(_checkInDate!.year, _checkInDate!.month, _checkInDate!.day);
-        if (checkInDay.isBefore(today)) {
-          _errorMessage = '⏳ DeLorean not included. Please select today or a future date for check-in!';
-          return;
-        }
-      }
-
-      if (_checkInDate != null && _checkOutDate != null) {
-        final checkInDay = DateTime(_checkInDate!.year, _checkInDate!.month, _checkInDate!.day);
-        final checkOutDay = DateTime(_checkOutDate!.year, _checkOutDate!.month, _checkOutDate!.day);
-
-        if (!checkOutDay.isAfter(checkInDay)) {
-          _errorMessage = '👻 Check-out must be after check-in!';
-          return;
-        }
+    if (_checkInDate != null) {
+      final checkInDay = DateTime(_checkInDate!.year, _checkInDate!.month, _checkInDate!.day);
+      if (checkInDay.isBefore(today)) {
+        _validationError = 'Check-in date cannot be in the past.';
+        return;
       }
     }
 
-    _errorMessage = null;
+    if (_checkInDate != null && _checkOutDate != null) {
+      final checkInDay = DateTime(_checkInDate!.year, _checkInDate!.month, _checkInDate!.day);
+      final checkOutDay = DateTime(_checkOutDate!.year, _checkOutDate!.month, _checkOutDate!.day);
+
+      if (!checkOutDay.isAfter(checkInDay)) {
+        _validationError = 'Check-out date must be after check-in date.';
+        return;
+      }
+
+      if (_selectedRoom != null && !isRoomAvailable(_selectedRoom!)) {
+        _validationError = 'Room ${_selectedRoom!.roomCode} is already booked for these dates.';
+        return;
+      }
+    }
+
+    _validationError = null;
   }
 }
