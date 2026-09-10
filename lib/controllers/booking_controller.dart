@@ -8,7 +8,9 @@ class BookingController extends ChangeNotifier {
   DateTime? _checkInDate;
   DateTime? _checkOutDate;
   Room? _selectedRoom;
-  String _guestName = 'Mathew Hyden';
+  String _guestName = '';
+  int _adultsCount = 1;
+  int _childrenCount = 0;
   int? _guestFilter;
   String? _validationError;
 
@@ -18,6 +20,9 @@ class BookingController extends ChangeNotifier {
   DateTime? get checkOutDate => _checkOutDate;
   Room? get selectedRoom => _selectedRoom;
   String get guestName => _guestName;
+  int get adultsCount => _adultsCount;
+  int get childrenCount => _childrenCount;
+  int get totalGuestsCount => _adultsCount + _childrenCount;
   int? get guestFilter => _guestFilter;
   String? get validationError => _validationError;
 
@@ -65,6 +70,8 @@ class BookingController extends ChangeNotifier {
       _selectedRoom != null &&
       _checkInDate != null &&
       _checkOutDate != null &&
+      _guestName.trim().isNotEmpty &&
+      _adultsCount <= (_selectedRoom?.maxGuests ?? 0) &&
       _validationError == null &&
       nights > 0;
 
@@ -82,6 +89,21 @@ class BookingController extends ChangeNotifier {
 
   void setGuestName(String name) {
     _guestName = name;
+    _validate();
+    notifyListeners();
+  }
+
+  void setAdultsCount(int count) {
+    if (count < 1) return;
+    _adultsCount = count;
+    _validate();
+    notifyListeners();
+  }
+
+  void setChildrenCount(int count) {
+    if (count < 0) return;
+    _childrenCount = count;
+    _validate();
     notifyListeners();
   }
 
@@ -135,6 +157,9 @@ class BookingController extends ChangeNotifier {
     _selectedRoom = null;
     _checkInDate = null;
     _checkOutDate = null;
+    _guestName = '';
+    _adultsCount = 1;
+    _childrenCount = 0;
     _validationError = null;
     notifyListeners();
   }
@@ -188,6 +213,11 @@ class BookingController extends ChangeNotifier {
         _validationError = 'Check-out date must be after check-in date.';
         return;
       }
+    }
+
+    if (_selectedRoom != null && _adultsCount > _selectedRoom!.maxGuests) {
+      _validationError = 'Adults count ($_adultsCount) exceeds room capacity (${_selectedRoom!.maxGuests} max).';
+      return;
     }
 
     _validationError = null;

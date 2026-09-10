@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'constants/app_colors.dart';
 import 'controllers/booking_controller.dart';
-import 'views/booking_screen.dart';
+import 'views/splash_screen.dart';
 
 void main() {
   runApp(const HotelBookingApp());
@@ -18,11 +19,11 @@ class HotelBookingApp extends StatelessWidget {
         title: 'RainStay Hotel Booking',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E3A8A)),
+          colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryTeal),
           useMaterial3: true,
           fontFamily: 'Roboto',
         ),
-        home: const BookingScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

@@ -21,6 +21,7 @@ void main() {
     test('Calculates nights and price accurately for check-in', () {
       final room = controller.rooms.firstWhere((r) => r.roomCode == 'R102'); // 3500/night
       controller.selectRoom(room);
+      controller.setGuestName('Adarsh');
 
       final checkIn = DateTime.now().add(const Duration(days: 5));
       final checkOut = DateTime.now().add(const Duration(days: 8)); // 3 nights
@@ -32,6 +33,26 @@ void main() {
       expect(controller.roomCharge, 3 * 3500.0);
       expect(controller.totalPrice, 3 * 3500.0);
       expect(controller.canConfirmBooking, isTrue);
+    });
+
+    test('Validates adult capacity against room maxGuests (children excluded from limit)', () {
+      final room = controller.rooms.firstWhere((r) => r.roomCode == 'R102'); // maxGuests: 2
+      controller.selectRoom(room);
+      controller.setGuestName('Adarsh');
+      controller.setCheckInDate(DateTime.now().add(const Duration(days: 1)));
+      controller.setCheckOutDate(DateTime.now().add(const Duration(days: 3)));
+
+      // 2 adults + 2 children -> valid because children don't count towards capacity limit
+      controller.setAdultsCount(2);
+      controller.setChildrenCount(2);
+      expect(controller.validationError, isNull);
+      expect(controller.canConfirmBooking, isTrue);
+
+      // 3 adults -> exceeds capacity (maxGuests is 2)
+      controller.setAdultsCount(3);
+      expect(controller.validationError, isNotNull);
+      expect(controller.validationError, contains('exceeds room capacity'));
+      expect(controller.canConfirmBooking, isFalse);
     });
 
     test('Fails validation if check-out date is not after check-in date', () {
