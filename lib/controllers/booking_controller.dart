@@ -12,9 +12,22 @@ class BookingController extends ChangeNotifier {
   int _adultsCount = 1;
   int _childrenCount = 0;
   int? _guestFilter;
+  String _searchQuery = '';
   String? _validationError;
 
   List<Room> get rooms => _rooms;
+  String get searchQuery => _searchQuery;
+
+  List<Room> get searchedRooms {
+    if (_searchQuery.trim().isEmpty) return _rooms;
+    final q = _searchQuery.trim().toLowerCase();
+    return _rooms.where((r) {
+      final codeMatch = r.roomCode.toLowerCase().contains(q);
+      final typeMatch = r.roomType.toLowerCase().contains(q);
+      final guestMatch = r.currentGuest?.toLowerCase().contains(q) ?? false;
+      return codeMatch || typeMatch || guestMatch;
+    }).toList();
+  }
   String get currentTab => _currentTab;
   DateTime? get checkInDate => _checkInDate;
   DateTime? get checkOutDate => _checkOutDate;
@@ -150,6 +163,11 @@ class BookingController extends ChangeNotifier {
     if (_selectedRoom != null && _guestFilter != null && _selectedRoom!.maxGuests < _guestFilter!) {
       _selectedRoom = null;
     }
+    notifyListeners();
+  }
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
     notifyListeners();
   }
 

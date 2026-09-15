@@ -463,18 +463,58 @@ class _DashboardView extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          '${controller.totalRooms} Rooms',
+                          '${controller.searchedRooms.length} Rooms',
                           style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0F766E)),
                         ),
                       ),
                     ],
                   ),
                   Wrap(
-                    spacing: 10,
-                    children: const [
-                      LegendDot(color: AppColors.availableGreen, label: 'Available'),
-                      LegendDot(color: AppColors.occupiedBlue, label: 'Occupied'),
-                      LegendDot(color: AppColors.dirtyRed, label: 'Dirty'),
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      // SEARCH ROOM INPUT
+                      Container(
+                        width: isDesktop ? 230 : 180,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.lightBorder),
+                        ),
+                        child: TextField(
+                          onChanged: controller.setSearchQuery,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: const TextStyle(fontSize: 13, color: AppColors.textDark, height: 1.2),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                            prefixIconConstraints: const BoxConstraints(minWidth: 34, minHeight: 36),
+                            prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.textMuted),
+                            suffixIconConstraints: const BoxConstraints(minWidth: 30, minHeight: 36),
+                            suffixIcon: controller.searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textMuted),
+                                    onPressed: () => controller.setSearchQuery(''),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  )
+                                : null,
+                            hintText: 'Search room...',
+                            hintStyle: const TextStyle(fontSize: 13, color: AppColors.textDisabled, height: 1.2),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      Wrap(
+                        spacing: 10,
+                        children: const [
+                          LegendDot(color: AppColors.availableGreen, label: 'Available'),
+                          LegendDot(color: AppColors.occupiedBlue, label: 'Occupied'),
+                          LegendDot(color: AppColors.dirtyRed, label: 'Dirty'),
+                        ],
+                      ),
                     ],
                   ),
                 ],
@@ -483,6 +523,30 @@ class _DashboardView extends StatelessWidget {
 
               LayoutBuilder(
                 builder: (context, gridConstraints) {
+                  final searched = controller.searchedRooms;
+                  if (searched.isEmpty) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 36),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.lightBorder),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.search_off_rounded, size: 32, color: AppColors.textDisabled),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No rooms found for "${controller.searchQuery}"',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
                   final screenWidth = gridConstraints.maxWidth;
                   int crossAxisCount = 2;
                   if (screenWidth >= 1400) {
@@ -504,7 +568,7 @@ class _DashboardView extends StatelessWidget {
                   return Wrap(
                     spacing: spacing,
                     runSpacing: spacing,
-                    children: controller.rooms.map((room) {
+                    children: searched.map((room) {
                       return RoomCardTile(
                         room: room,
                         controller: controller,
